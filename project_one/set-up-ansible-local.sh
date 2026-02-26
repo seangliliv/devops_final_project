@@ -1,0 +1,1 @@
+#here is file for set up ansible localy on the machine and install the required packages for ansible to work
