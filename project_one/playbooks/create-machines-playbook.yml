@@ -1,0 +1,9 @@
+---
+- name: Create machines playbooks 
+  hosts: localhost
+  # become: true  
+  vars_files:
+    - ../vars/machines.yaml 
+  tasks: 
+    - name: Create master machines
+      import_tasks: ./tasks/create-masters-instances.yaml

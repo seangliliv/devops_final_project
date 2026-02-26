@@ -1,0 +1,4 @@
+create-machines: 
+    ansible-playbook -i inventory.ini playbooks/create-machines-playbook.yaml
+destroy-vm:
+    ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yaml
