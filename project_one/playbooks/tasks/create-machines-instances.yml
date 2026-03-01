@@ -57,7 +57,7 @@
 
   register: gcp_instances
   # when: false 
-  when: item.name in ["machine01","machine02","machine03"] 
+  when: item.name in ["master01","master02","master03","worker01","worker02"] 
     # - item.name == "master02"
     # - item.name == "master03" 
 # Error in getting the first values  results 

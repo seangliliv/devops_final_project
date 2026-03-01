@@ -3,7 +3,7 @@
   hosts: localhost
   # become: true  
   vars_files:
-    - ../vars/machines.yaml 
+    - ./vars/machines.yml 
   tasks: 
     - name: Create master machines
-      import_tasks: ./tasks/create-masters-instances.yaml
+      import_tasks: ./tasks/create-machines-instances.yml
