@@ -1,0 +1,8 @@
+ansible_user=livdev
+
+
+
+adc_file: "/home/livdev/.config/gcloud/application_default_credentials.json"
+google_project_id: "project-9f03f82f-aaf2-4765-9f4"
+ssh_pubkey_path: "/home/livdev/.ssh/id_rsa.pub"
+agent_user: "livdev"
