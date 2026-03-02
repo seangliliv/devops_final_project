@@ -2,3 +2,20 @@ create-machines:
     ansible-playbook -i inventory.ini playbooks/create-machines-playbook.yml
 destroy-vm:
     ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yaml
+
+install-zsh:
+    ./install_softwares/ohMyZsh.sh
+install-docker:
+    ./install_softwares/docker.sh
+install-just:
+    ./install_softwares/just.sh
+install-ansible:
+    ./install_softwares/ansible.sh
+install-nginx_certbot:
+    ./install_softwares/nginx_certbot.sh
+install-all:
+    just install-zsh
+    just install-docker
+    just install-just
+    just install-ansible
+    just install-nginx_certbot
