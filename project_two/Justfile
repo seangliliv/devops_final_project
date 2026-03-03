@@ -1,0 +1,12 @@
+create-machines: 
+    ansible-playbook -i inventory.ini playbooks/create-machines-playbook.yml
+destroy-vm:
+    ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yaml
+
+install-just:
+    ./install_softwares/just.sh
+install-ansible:
+    ./install_softwares/ansible.sh
+install-all:
+    just install-just
+    just install-ansible
