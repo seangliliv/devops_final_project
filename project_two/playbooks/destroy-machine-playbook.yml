@@ -1,0 +1,49 @@
+# # this playbook destroy VM 
+- name: Destroy GCP Master VM
+  hosts: localhost
+  vars_files:
+    - ../vars/machines.yaml
+  tasks: 
+  - name: Install Pip
+    apt:
+      name: python3-pip
+      state: present
+
+  - name: Ensure required packages are installed
+    pip:
+      name:
+        - requests
+        - google-auth
+
+  - name: Loop to show machines to be destroyed
+    debug:
+      msg: |
+        Destroying Machine: {{ item.name }}
+    loop: "{{ machines_info }}"
+    when: true
+
+  - name: Destroy GCP instance
+    google.cloud.gcp_compute_instance:
+      name: "{{ item.name }}"
+      machine_type: "{{ item.machine_type }}"
+      zone: "{{ item.zone }}"
+      project: "{{ google_project_id }}"
+      auth_kind: application
+      #auth_kind: "serviceaccount"
+      #service_account_file: "{{ service_account_path }}"
+      state: absent  # absent -> delete instance
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: "{{ adc_file }}"
+    loop: "{{ machines_info }}"
+    register: destroyed_instances
+    when: item.name in ["master01","master02","master03"]
+    # when: item.name in ["worker01","worker02"]
+      # - item.name == "master02"
+      # - item.name == "master03"
+
+  - name: Show destroy results
+    debug:
+      msg: |
+        Instance {{ item.item.name }} destruction status: {{ item.state | default('completed') }}
+    loop: "{{ destroyed_instances.results }}"
+    when: destroyed_instances is defined
