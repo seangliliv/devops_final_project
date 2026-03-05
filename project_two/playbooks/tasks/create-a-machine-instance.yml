@@ -80,6 +80,6 @@
   when: true
 - name: Create inventory from template 
   template: 
-    src: ../templates/masters-inventory.j2
+    src: ../templates/machine-inventory.j2
     dest: ../inventory.ini
   when: true  
