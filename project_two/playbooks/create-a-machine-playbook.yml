@@ -1,0 +1,9 @@
+---
+- name: Create single masters playbooks 
+  hosts: localhost
+  become: true  
+  vars_files:
+    - ../vars/machines.yml 
+  tasks: 
+    - name: Create first machines
+      import_tasks: ./tasks/create-a-master-instance.yml
