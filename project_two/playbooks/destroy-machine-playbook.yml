@@ -2,7 +2,7 @@
 - name: Destroy GCP Master VM
   hosts: localhost
   vars_files:
-    - ../vars/machines.yaml
+    - ./vars/machines.yml
   tasks: 
   - name: Install Pip
     apt:
@@ -36,7 +36,7 @@
       GOOGLE_APPLICATION_CREDENTIALS: "{{ adc_file }}"
     loop: "{{ machines_info }}"
     register: destroyed_instances
-    when: item.name in ["master01","master02","master03"]
+    when: item.name in ["master01"]
     # when: item.name in ["worker01","worker02"]
       # - item.name == "master02"
       # - item.name == "master03"

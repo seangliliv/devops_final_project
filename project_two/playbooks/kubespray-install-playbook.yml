@@ -1,0 +1,41 @@
+---
+# Run this AFTER the VM is already created and inventory.ini is populated
+# Usage: just clone-kubespray
+- name: Clone kubespray on master01
+  hosts: master01
+  become: false
+  vars_files:
+    - ./vars/machines.yml
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+  tasks:
+    - name: Check if kubespray already cloned
+      stat:
+        path: "{{ kubespray_dest }}"
+      register: kubespray_dir
+
+    - name: Install git on master01
+      apt:
+        name: git
+        state: present
+        update_cache: true
+      become: true
+      when: not kubespray_dir.stat.exists
+
+    - name: Git clone kubespray
+      git:
+        repo: "{{ kubespray_repo }}"
+        dest: "{{ kubespray_dest }}"
+        version: master
+      when: not kubespray_dir.stat.exists
+
+    - name: Skip message if already cloned
+      debug:
+        msg: "kubespray already exists at {{ kubespray_dest }}, skipping clone."
+      when: kubespray_dir.stat.exists
+
+    - name: Show clone result
+      debug:
+        msg: "kubespray cloned successfully at {{ kubespray_dest }}"
+      when: not kubespray_dir.stat.exists
