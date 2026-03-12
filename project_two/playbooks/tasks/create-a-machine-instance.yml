@@ -18,7 +18,7 @@
 
 - name: Slurp pub key from local machine
   slurp:
-    src: "{{ ssh_pub_key_path }}"
+    src: "{{ ssh_pubkey_path }}"
   register: ssh_pubkey
   when: true 
 
@@ -59,20 +59,8 @@
 
   register: gcp_instances
   # when: false 
-  when: item.name in ["master01"] 
-    # - item.name == "master02"
-    # - item.name == "master03" 
-# Error in getting the first values  results 
-# - name: Write gcp_instances into json file
-#   copy:
-#     content: "{{ gcp_instances }}"
-#     dest: "./gcp_more_instances.json"
-#   when: true
-# - name: Create inventory from template 
-#   template: 
-#     src: ../templates/masters-inventory.j2
-#     dest: ../inventory.ini
-#   when: true  
+  when: item.name in ["master01"]  
+
 - name: Write gcp_instances into json file
   copy:
     content: "{{ gcp_instances }}"
@@ -83,3 +71,19 @@
     src: ../templates/machine-inventory.j2
     dest: ../inventory.ini
   when: true  
+
+- name: Remove old host key from known_hosts
+  known_hosts:
+    name: "{{ (gcp_instances.results | selectattr('item.name', 'equalto', 'master01') | selectattr('skipped', 'undefined') | list | first).networkInterfaces[0].accessConfigs[0].natIP }}"
+    state: absent
+  delegate_to: localhost
+
+# ── Wait for master01 SSH before next playbook ───────────────────────────────
+- name: Wait for master01 SSH to be ready
+  wait_for:
+    host: "{{ (gcp_instances.results | selectattr('item.name', 'equalto', 'master01') | selectattr('skipped', 'undefined') | list | first).networkInterfaces[0].accessConfigs[0].natIP }}"
+    port: 22
+    delay: 10
+    timeout: 120
+    state: started
+  delegate_to: localhost

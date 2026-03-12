@@ -71,3 +71,5 @@
     src: ../templates/machine-inventory.j2
     dest: ../inventory.ini
   when: true  
+
+ 

@@ -1,12 +1,24 @@
 create-machines: 
     ansible-playbook -i inventory.ini playbooks/create-machines-playbook.yml
+create-a-machine:
+    ansible-playbook -K -i inventory.ini playbooks/create-a-machine-playbook.yml
 destroy-vm:
-    ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yaml
+    ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yml
 
 install-just:
     ./install_softwares/just.sh
 install-ansible:
     ./install_softwares/ansible.sh
+clone-kubespray:
+    ansible-playbook -i inventory.ini playbooks/kubespray-install-playbook.yml
+
+set-up:
+    just create-a-machine
+    just clone-kubespray
+
+main:
+    ansible-playbook -K -i inventory.ini playbooks/setup-and-create-machine.yml
+
 install-all:
     just install-just
     just install-ansible
