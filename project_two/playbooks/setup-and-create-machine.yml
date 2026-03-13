@@ -85,6 +85,11 @@
         src: "{{ ssh_pubkey_path }}"
         dest: "/home/{{ agent_user }}/.ssh/id_rsa.pub"
         mode: '0644'
+    - name: Copy local id_rsa (private key) to master01
+      copy:
+        src: "{{ ssh_pubkey_path | replace('.pub', '') }}"
+        dest: "/home/{{ agent_user }}/.ssh/id_rsa"
+        mode: '0600'
 
     # ── Copy playbook files to master01 ──────────────────────────────────────
     - name: Copy vars/machines.yml to master01
@@ -106,6 +111,14 @@
       copy:
         src: ./create-machines-playbook.yml
         dest: "{{ remote_workspace }}/playbooks/create-machines-playbook.yml"
+    - name: copy inventory file to master01
+      copy:
+        src: ../inventory.ini
+        dest: "{{ remote_workspace }}/playbooks/inventory.ini"
+    - name: copy destroy-machines-playbook to master01
+      copy:
+        src: ./destroy-machine-playbook.yml
+        dest: "{{ remote_workspace }}/playbooks/destroy-machine-playbook.yml"
 
     # ── Switch auth to machineaccount (uses GCP metadata, no credentials file) 
     # - name: Update auth_kind to machineaccount in task file
