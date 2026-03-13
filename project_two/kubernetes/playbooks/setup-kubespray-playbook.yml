@@ -1,0 +1,117 @@
+- name: Setup kubespray on master01
+  hosts: localhost
+  become: false
+  vars_files:
+    - ./vars/machines.yml
+  vars:
+    kubespray_repo: "https://github.com/kubernetes-sigs/kubespray.git"
+    kubespray_dest: "/home/{{ agent_user }}/kubespray"
+    kubespray_version: "v2.26.0"
+
+  tasks:
+    # ── 1. Clone kubespray ────────────────────────────────────────────────
+    - name: Check if kubespray already cloned
+      stat:
+        path: "{{ kubespray_dest }}"
+      register: kubespray_dir
+
+    - name: Clone kubespray
+      git:
+        repo: "{{ kubespray_repo }}"
+        dest: "{{ kubespray_dest }}"
+        version: master
+      when: not kubespray_dir.stat.exists
+
+    # ── 2. Checkout stable version ────────────────────────────────────────
+    - name: Checkout v2.26.0
+      shell: |
+        cd {{ kubespray_dest }}
+        git stash
+        git checkout {{ kubespray_version }}
+      args:
+        executable: /bin/bash
+
+    # ── 3. Install requirements ───────────────────────────────────────────
+    - name: Install ansible-core 2.16.9
+      pip:
+        name: ansible-core==2.16.9
+        state: present
+
+    - name: Install kubespray requirements (skip ansible)
+      shell: |
+        cd {{ kubespray_dest }}
+        grep -v "^ansible==" requirements.txt | pip install -r /dev/stdin
+      args:
+        executable: /bin/bash
+
+    # ── 4. Generate kubespray inventory ───────────────────────────────────
+    - name: Read gcp instances json
+      set_fact:
+        gcp_data: "{{ lookup('file', '/home/{{ agent_user }}/project/gcp_more_instances.json') | from_json }}"
+
+    - name: Create kubespray inventory
+      copy:
+        dest: "{{ kubespray_dest }}/inventory/sample/inventory.ini"
+        content: |
+          [all:vars]
+          ansible_user={{ agent_user }}
+          ansible_ssh_private_key_file=/home/{{ agent_user }}/.ssh/id_rsa
+          ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+          ansible_python_interpreter=/usr/bin/python3
+          ansible_become=true
+
+          [kube_control_plane]
+          node1 ansible_connection=local
+          {% for instance in gcp_data.results %}
+          {% if not instance.skipped is defined and instance.name is defined %}
+          {% if instance.name == "master02" %}
+          node2 ansible_host={{ instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          {% elif instance.name == "master03" %}
+          node3 ansible_host={{ instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+
+          [etcd:children]
+          kube_control_plane
+
+          [kube_node]
+          {% for instance in gcp_data.results %}
+          {% if not instance.skipped is defined and instance.name is defined %}
+          {% if instance.name == "worker01" %}
+          node4 ansible_host={{ instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          {% elif instance.name == "worker02" %}
+          node5 ansible_host={{ instance.networkInterfaces[0].accessConfigs[0].natIP }}
+          {% endif %}
+          {% endif %}
+          {% endfor %}
+
+          [k8s_cluster:children]
+          kube_control_plane
+          kube_node
+
+          [calico_rr]
+
+    # ── 5. Update addons.yml ──────────────────────────────────────────────
+    - name: Update addons.yml
+      copy:
+        dest: "{{ kubespray_dest }}/inventory/sample/group_vars/k8s_cluster/addons.yml"
+        content: |
+          dashboard_enabled: true
+          helm_enabled: true
+          metrics_server_enabled: true
+          ingress_nginx_enabled: true
+          cert_manager_enabled: true
+          argocd_enabled: true
+
+    # ── 6. Run cluster.yml ────────────────────────────────────────────────
+    - name: Run kubespray cluster.yml
+      shell: |
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        cd {{ kubespray_dest }}
+        ansible-playbook -i inventory/sample/inventory.ini cluster.yml
+      args:
+        executable: /bin/bash
+      async: 3600
+      poll: 30
