@@ -1,0 +1,51 @@
+- name: Install ohMyZsh
+  hosts: all
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Install dependencies (git, curl, zsh)
+      apt:
+        name:
+          - git
+          - curl
+          - zsh
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Check if oh-my-zsh already installed
+      stat:
+        path: "/home/{{ agent_user }}/.oh-my-zsh"
+      register: ohmyzsh_dir
+
+    - name: Install oh-my-zsh
+      shell: |
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      when: not ohmyzsh_dir.stat.exists
+
+    - name: Clone zsh-autosuggestions plugin
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions.git
+        dest: "/home/{{ agent_user }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+        force: true
+      when: not ohmyzsh_dir.stat.exists
+
+    - name: Clone zsh-syntax-highlighting plugin
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: "/home/{{ agent_user }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+        force: true
+      when: not ohmyzsh_dir.stat.exists
+
+    - name: Enable plugins in .zshrc
+      replace:
+        path: "/home/{{ agent_user }}/.zshrc"
+        regexp: '^plugins=\(git\)'
+        replace: 'plugins=(git zsh-autosuggestions zsh-syntax-highlighting)'
+
+    - name: Set zsh as default shell
+      user:
+        name: "{{ agent_user }}"
+        shell: /bin/zsh
+      become: true
