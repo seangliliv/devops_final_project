@@ -1,0 +1,39 @@
+- name: Install Ansible
+  hosts: machine01
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Install pip3
+      apt:
+        name:
+          - python3-pip
+          - locales
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Generate locale
+      shell: sudo locale-gen en_US.UTF-8
+      become: true
+
+    - name: Set locale
+      shell: sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+      become: true
+
+    - name: Install ansible-core 2.16.9 via pip
+      pip:
+        name: ansible-core==2.16.9
+        state: present
+      become: true
+
+    - name: Verify ansible installed
+      shell: ansible --version
+      register: ansible_ver_output
+      environment:
+        LANG: en_US.UTF-8
+        LC_ALL: en_US.UTF-8
+
+    - name: Show ansible version
+      debug:
+        msg: "{{ ansible_ver_output.stdout }}"
