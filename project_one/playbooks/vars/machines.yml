@@ -14,18 +14,7 @@ machine_specs:
     region: "asia-southeast2" # for reserving static IP
     disk_size: 60
     disk_type: "pd-standard" # we have hdd(pd-standard) , ssd( pd-ssd)
-  medium:
-    machine_type: "e2-standard-2"
-    zone: "asia-southeast1-a"
-    region: "asia-southeast1" 
-    disk_size: 20
-    disk_type: "pd-standard"
-  small:
-    machine_type: "e2-medium"
-    zone: "asia-east2-a"
-    region: "asia-east2" # for reserving static IP
-    disk_size: 20
-    disk_type: "pd-standard"
+ 
   
 
 ubuntu_specs:
@@ -38,40 +27,24 @@ ubuntu_specs:
 # Define machines that we will create
 machines_info:
   # master requirement : RAM 8G, ....
-  - name: "master01"
+  - name: "machine01"
     machine_type: "{{ machine_specs.large.machine_type }}"
     image: "{{ ubuntu_specs.v22.image }}"
     zone: "{{ machine_specs.large.zone }}"
     region: "{{ machine_specs.large.region }}"
     disk_size: "{{ machine_specs.large.disk_size }}"
     disk_type: "{{ machine_specs.large.disk_type }}"
-  - name: "master02"
+  - name: "machine02"
     machine_type: "{{ machine_specs.medium.machine_type }}"
     image: "{{ ubuntu_specs.v22.image }}"
-    zone: "{{ machine_specs.medium.zone }}"
-    region: "{{ machine_specs.medium.region }}"
-    disk_size: "{{ machine_specs.medium.disk_size }}"
-    disk_type: "{{ machine_specs.medium.disk_type }}"
-  - name: "master03"
+    zone: "{{ machine_specs.large.zone }}"
+    region: "{{ machine_specs.large.region }}"
+    disk_size: "{{ machine_specs.large.disk_size }}"
+    disk_type: "{{ machine_specs.large.disk_type }}"
+  - name: "machine03"
     machine_type: "{{ machine_specs.medium.machine_type }}"
     image: "{{ ubuntu_specs.v22.image }}"
-    zone: "{{ machine_specs.medium.zone }}"
-    region: "{{ machine_specs.medium.region }}"
-    disk_size: "{{ machine_specs.medium.disk_size }}"
-    disk_type: "{{ machine_specs.medium.disk_type }}"
-  - name: "worker01"
-    machine_type: "{{ machine_specs.small.machine_type }}"
-    image: "{{ ubuntu_specs.v22.image }}"
-    zone: "{{ machine_specs.small.zone }}"
-    region: "{{ machine_specs.small.region }}"
-    # zone: "asia-east2-a" # Hongkon zone 
-    disk_size: "{{ machine_specs.small.disk_size }}"
-    disk_type: "{{ machine_specs.small.disk_type }}"
-  - name: "worker02"
-    image: "{{ ubuntu_specs.v22.image }}"
-    machine_type: "{{ machine_specs.small.machine_type }}"
-    zone: "{{ machine_specs.small.zone }}"
-    region: "{{ machine_specs.small.region }}"
-    # zone: "asia-east2-a" # Hongkong instance
-    disk_size: "{{ machine_specs.small.disk_size }}"
-    disk_type: "{{ machine_specs.small.disk_type }}"
+    zone: "{{ machine_specs.large.zone }}"
+    region: "{{ machine_specs.large.region }}"
+    disk_size: "{{ machine_specs.large.disk_size }}"
+    disk_type: "{{ machine_specs.large.disk_type }}"
