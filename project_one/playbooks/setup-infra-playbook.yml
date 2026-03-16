@@ -1,0 +1,5 @@
+- name: Create machines
+  import_playbook: tasks/create-machines.yml
+
+- name: Install ohMyZsh
+  import_playbook: softwares/common/ohmyzsh.yml
