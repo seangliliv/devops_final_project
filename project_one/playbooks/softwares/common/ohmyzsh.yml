@@ -1,5 +1,5 @@
 - name: Install ohMyZsh
-  hosts: all
+  hosts: all:!localhost
   become: false
   vars_files:
     - ../../vars/machines.yml
@@ -13,6 +13,7 @@
         state: present
         update_cache: true
       become: true
+      when: inventory_hostname != 'localhost'
 
     - name: Check if oh-my-zsh already installed
       stat:

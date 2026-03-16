@@ -1,5 +1,14 @@
+---
 - name: Create machines
-  import_playbook: tasks/create-machines.yml
+  hosts: localhost
+  vars_files:
+    - ./vars/machines.yml
+  tasks:
+    - name: Create machines
+      import_tasks: ./tasks/create-machines-instances.yml
 
-- name: Install ohMyZsh
-  import_playbook: softwares/common/ohmyzsh.yml
+- name: Install ohMyZsh on all machines
+  import_playbook: ./softwares/common/ohmyzsh.yml
+
+- name: Copy SSH keys
+  import_playbook: ./softwares/common/copy-ssh-keys.yml

@@ -1,0 +1,17 @@
+- name: Copy SSH keys to all machines
+  hosts: all:!localhost
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Copy id_rsa private key
+      copy:
+        src: "{{ ssh_pubkey_path | replace('.pub', '') }}"
+        dest: "/home/{{ agent_user }}/.ssh/id_rsa"
+        mode: '0600'
+
+    - name: Copy id_rsa.pub public key
+      copy:
+        src: "{{ ssh_pubkey_path }}"
+        dest: "/home/{{ agent_user }}/.ssh/id_rsa.pub"
+        mode: '0644'

@@ -57,9 +57,9 @@
 
   register: gcp_instances
   # when: false 
-  when: item.name in ["master01","master02","master03","worker01","worker02"] 
-    # - item.name == "master02"
-    # - item.name == "master03" 
+  when: item.name in ["machine01"] 
+    # - item.name == "machine02"
+    # - item.name == "machine03" 
 # Error in getting the first values  results 
 - name: Write gcp_instances into json file
   copy:
@@ -71,3 +71,11 @@
     src: ../templates/machine-inventory.j2
     dest: ../inventory.ini
   when: true  
+
+- name: Remove old host key from known_hosts
+  known_hosts:
+    name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+    state: absent
+  delegate_to: localhost
+  loop: "{{ gcp_instances.results }}"
+  when: not item.skipped is defined and item.name is defined
