@@ -1,0 +1,57 @@
+- name: Install Nginx and Certbot
+  hosts: machine01
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Install nginx and certbot
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Start and enable nginx
+      service:
+        name: nginx
+        state: started
+        enabled: true
+      become: true
+
+    - name: Create nginx config for jenkins
+      template:
+        src: ../../templates/nginx-jenkins.conf.j2
+        dest: /etc/nginx/sites-available/jenkins
+      become: true
+
+    - name: Enable jenkins nginx site
+      file:
+        src: /etc/nginx/sites-available/jenkins
+        dest: /etc/nginx/sites-enabled/jenkins
+        state: link
+      become: true
+
+    - name: Remove default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      become: true
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: true
+
+    - name: Run certbot for jenkins
+      shell: |
+        certbot --nginx \
+          -d {{ jenkins_domain }} \
+          --agree-tos \
+          -m {{ certbot_email }} \
+          --redirect \
+          --non-interactive
+      become: true
