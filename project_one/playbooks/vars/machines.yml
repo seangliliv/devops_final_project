@@ -5,7 +5,9 @@
 # google_project_id: "project id"
 # ssh_pubkey_path: "public key path"
 # agent_user: "name"
+
  
+
 # Define machine spec
 machine_specs:
   large:
@@ -46,3 +48,5 @@ machines_info:
     region: "{{ machine_specs.large.region }}"
     disk_size: "{{ machine_specs.large.disk_size }}"
     disk_type: "{{ machine_specs.large.disk_type }}"
+
+

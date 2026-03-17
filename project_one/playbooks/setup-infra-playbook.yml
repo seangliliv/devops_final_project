@@ -12,3 +12,6 @@
 
 - name: Copy SSH keys
   import_playbook: ./softwares/common/copy-ssh-keys.yml
+
+- name: Install Ansible
+  import_playbook: ./softwares/machine01/ansible.yml

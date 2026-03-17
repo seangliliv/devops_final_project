@@ -1,9 +1,0 @@
----
-- name: Setup master01 and create other VMs
-  hosts: master01
-  become: false
-  vars_files:
-    - ./vars/machines.yml
-  tasks: 
-    - name: Create first machines
-      import_tasks: ./tasks/create-main-machines.yml
