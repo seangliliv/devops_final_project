@@ -1,0 +1,34 @@
+- name: Install Portainer
+  hosts: all:!localhost
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Create portainer volume
+      shell: docker volume create portainer_data
+      ignore_errors: true
+
+    - name: Check if portainer container already exists
+      shell: docker ps -a --filter "name=portainer" --format "{% raw %}{{.Names}}{% endraw %}"
+      register: portainer_container
+
+    - name: Run portainer container
+      shell: |
+        docker run -d \
+          -p 9000:9000 \
+          -p 9443:9443 \
+          --name portainer \
+          --restart=always \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v portainer_data:/data \
+          portainer/portainer-ce:latest
+      when: "'portainer' not in portainer_container.stdout"
+
+    - name: Check portainer is running
+      shell: docker ps | grep portainer
+      register: portainer_status
+      ignore_errors: true
+
+    - name: Show portainer status
+      debug:
+        msg: "{{ portainer_status.stdout }}"

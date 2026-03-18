@@ -1,0 +1,29 @@
+- name: Install glab
+  hosts: machine01
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Check if glab already installed
+      stat:
+        path: /usr/bin/glab
+      register: glab_installed
+
+    - name: Download glab deb package
+      shell: |
+        GLAB_VERSION=$(curl -s https://gitlab.com/api/v4/projects/34675721/releases | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['tag_name'])")
+        curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/${GLAB_VERSION}/downloads/glab_${GLAB_VERSION#v}_linux_amd64.deb" -o /tmp/glab.deb
+      when: not glab_installed.stat.exists
+
+    - name: Install glab deb package
+      shell: sudo dpkg -i /tmp/glab.deb
+      become: true
+      when: not glab_installed.stat.exists
+
+    - name: Verify glab installed
+      shell: glab --version
+      register: glab_ver_output
+
+    - name: Show glab version
+      debug:
+        msg: "{{ glab_ver_output.stdout }}"
