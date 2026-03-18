@@ -4,7 +4,7 @@
   vars_files:
     - ../../vars/machines.yml
   tasks:
-    - name: Install dependencies
+    - name: Install ca-certificates and curl
       apt:
         name:
           - ca-certificates
@@ -14,16 +14,15 @@
       become: true
 
     - name: Create keyrings directory
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
+      shell: sudo install -m 0755 -d /etc/apt/keyrings
       become: true
+      args:
+        creates: /etc/apt/keyrings
 
-    - name: Add Docker GPG key
+    - name: Download Docker GPG key
       shell: |
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-        chmod a+r /etc/apt/keyrings/docker.asc
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
       become: true
       args:
         creates: /etc/apt/keyrings/docker.asc
@@ -31,7 +30,7 @@
     - name: Add Docker repository
       shell: |
         . /etc/os-release
-        tee /etc/apt/sources.list.d/docker.sources <<EOF
+        sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
         Types: deb
         URIs: https://download.docker.com/linux/ubuntu
         Suites: ${UBUNTU_CODENAME:-$VERSION_CODENAME}
