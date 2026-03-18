@@ -1,8 +1,9 @@
 create-machines: 
-    ansible-playbook -i inventory.ini playbooks/setup-infra-playbook.yml
+    ansible-playbook -i inventory.ini playbooks/create-machines-playbook.yml
 destroy-vm:
     ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yml
-
+set-infra:
+    ansible-playbook -i inventory.ini playbooks/setup-infra-playbook.yml
 install-zsh:
     ./install_softwares/ohMyZsh.sh
 install-docker:

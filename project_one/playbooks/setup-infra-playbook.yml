@@ -1,17 +1,25 @@
 ---
-- name: Create machines
-  hosts: localhost
-  vars_files:
-    - ./vars/machines.yml
-  tasks:
-    - name: Create machines
-      import_tasks: ./tasks/create-machines-instances.yml
-
 - name: Install ohMyZsh on all machines
   import_playbook: ./softwares/common/ohmyzsh.yml
+
+- name: Install Ansible
+  import_playbook: ./softwares/machine01/ansible.yml  
 
 - name: Copy SSH keys
   import_playbook: ./softwares/common/copy-ssh-keys.yml
 
-- name: Install Ansible
-  import_playbook: ./softwares/machine01/ansible.yml
+- name: Run Jenkins
+  import_playbook: ./softwares/machine01/jenkins.yml
+
+- name: Install Docker
+  import_playbook: ./softwares/machine01/docker.yml
+
+- name: Install Nginx and Certbot
+  import_playbook: ./softwares/machine01/nginx.yml
+
+- name: Install glab
+  import_playbook: ./softwares/machine01/glab.yml
+
+- name: Install Portainer on all machines
+  import_playbook: ./softwares/common/portainer.yml
+

@@ -7,7 +7,8 @@
 # agent_user: "name"
 
  
-
+jenkins_domain: "jenkins.seangliliv.site"
+certbot_email: "seangliliv12@gmail.com"
 # Define machine spec
 machine_specs:
   large:
