@@ -6,8 +6,8 @@
 # ssh_pubkey_path: "public key path"
 # agent_user: "name"
 
- 
-jenkins_domain: "jenkins.example.com"
+
+jenkins_domain: "domain.com"
 certbot_email: "email@example.com"
 # Define machine spec
 machine_specs:
