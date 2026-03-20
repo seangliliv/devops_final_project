@@ -7,10 +7,12 @@
     - name: Create portainer volume
       shell: docker volume create portainer_data
       ignore_errors: true
+      become: true
 
     - name: Check if portainer container already exists
       shell: docker ps -a --filter "name=portainer" --format "{% raw %}{{.Names}}{% endraw %}"
       register: portainer_container
+      become: true
 
     - name: Run portainer container
       shell: |
@@ -22,6 +24,7 @@
           -v /var/run/docker.sock:/var/run/docker.sock \
           -v portainer_data:/data \
           portainer/portainer-ce:latest
+      become: true
       when: "'portainer' not in portainer_container.stdout"
 
     - name: Check portainer is running

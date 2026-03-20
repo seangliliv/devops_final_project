@@ -1,6 +1,9 @@
 ---
+- name: Install Docker on machine 
+  import_playbook: ./softwares/common/docker.yml
+  
 - name: Install Portainer on all machines
   import_playbook: ./softwares/common/portainer.yml
-
+ 
 - name: Install SonarQube on machine02
   import_playbook: ./softwares/machine02/sonarqube.yml

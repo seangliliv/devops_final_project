@@ -32,7 +32,7 @@
         docker run -d \
           --name sonarqube \
           --restart=always \
-          -p 9000:9000 \
+          -p 9001:9000 \
           -v /home/{{ agent_user }}/sonarqube/data:/opt/sonarqube/data \
           -v /home/{{ agent_user }}/sonarqube/logs:/opt/sonarqube/logs \
           -v /home/{{ agent_user }}/sonarqube/extensions:/opt/sonarqube/extensions \

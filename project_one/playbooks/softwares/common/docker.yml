@@ -59,6 +59,15 @@
         groups: docker
         append: true
       become: true
+    - name: Add user to docker group
+      user:
+        name: "{{ agent_user }}"
+        groups: docker
+        append: true
+      become: true
+
+    - name: Reset ssh connection to apply docker group
+      meta: reset_connection
 
     - name: Start and enable docker
       service:
