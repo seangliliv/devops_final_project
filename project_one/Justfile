@@ -4,6 +4,8 @@ destroy-vm:
     ansible-playbook -i inventory.ini playbooks/destroy-machine-playbook.yml
 set-infra:
     ansible-playbook -i inventory.ini playbooks/setup-infra-playbook.yml
+set-sonarqube:
+    ansible-playbook -i inventory.ini playbooks/setup-infra.yml
 install-zsh:
     ./install_softwares/ohMyZsh.sh
 install-docker:

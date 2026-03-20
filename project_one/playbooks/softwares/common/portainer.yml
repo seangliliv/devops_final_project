@@ -1,5 +1,5 @@
 - name: Install Portainer
-  hosts: machine01
+  hosts: machine02
   become: false
   vars_files:
     - ../../vars/machines.yml

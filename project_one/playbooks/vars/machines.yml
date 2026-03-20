@@ -7,8 +7,15 @@
 # agent_user: "name"
 
 
-jenkins_domain: "domain.com"
-certbot_email: "email@example.com"
+adc_file: "/home/livdev/.config/gcloud/application_default_credentials.json"
+google_project_id: "project-9f03f82f-aaf2-4765-9f4"
+ssh_pubkey_path: "/home/livdev/.ssh/id_rsa.pub"
+agent_user: "livdev"
+
+sonarqube_domain: "sonarqube.seangliliv.site"
+jenkins_domain: "jenkins.seangliliv.site"
+certbot_email: "seangliliv12@gmail.com"
+
 # Define machine spec
 machine_specs:
   large:

@@ -1,5 +1,5 @@
 - name: Install Docker
-  hosts: machine01
+  hosts: all:!localhost 
   become: false
   vars_files:
     - ../../vars/machines.yml

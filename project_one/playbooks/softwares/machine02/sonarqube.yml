@@ -1,0 +1,98 @@
+- name: Install SonarQube
+  hosts: machine02
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+
+    - name: Set vm.max_map_count for sonarqube
+      shell: |
+        sudo sysctl -w vm.max_map_count=524288
+        sudo sysctl -w fs.file-max=131072
+        echo "vm.max_map_count=524288" | sudo tee -a /etc/sysctl.conf
+        echo "fs.file-max=131072" | sudo tee -a /etc/sysctl.conf
+      become: true
+
+    - name: Create sonarqube directories
+      file:
+        path: "/home/{{ agent_user }}/sonarqube/{{ item }}"
+        state: directory
+        mode: '0777'
+      loop:
+        - data
+        - logs
+        - extensions
+
+    - name: Check if sonarqube container already running
+      shell: docker ps -a --filter "name=sonarqube" --format "{% raw %}{{.Names}}{% endraw %}"
+      register: sonarqube_container
+
+    - name: Run sonarqube container
+      shell: |
+        docker run -d \
+          --name sonarqube \
+          --restart=always \
+          -p 9000:9000 \
+          -v /home/{{ agent_user }}/sonarqube/data:/opt/sonarqube/data \
+          -v /home/{{ agent_user }}/sonarqube/logs:/opt/sonarqube/logs \
+          -v /home/{{ agent_user }}/sonarqube/extensions:/opt/sonarqube/extensions \
+          sonarqube:lts-community
+      when: "'sonarqube' not in sonarqube_container.stdout"
+
+    - name: Wait for sonarqube to start
+      wait_for:
+        port: 9000
+        delay: 15
+        timeout: 180
+
+    - name: Install nginx and certbot
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Start and enable nginx
+      service:
+        name: nginx
+        state: started
+        enabled: true
+      become: true
+
+    - name: Create nginx config for sonarqube
+      template:
+        src: ../../templates/nginx-sonarqube.conf.j2
+        dest: /etc/nginx/sites-available/sonarqube
+      become: true
+
+    - name: Enable sonarqube nginx site
+      file:
+        src: /etc/nginx/sites-available/sonarqube
+        dest: /etc/nginx/sites-enabled/sonarqube
+        state: link
+      become: true
+
+    - name: Remove default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      become: true
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: true
+
+    - name: Run certbot for sonarqube
+      shell: |
+        certbot --nginx \
+          -d {{ sonarqube_domain }} \
+          --agree-tos \
+          -m {{ certbot_email }} \
+          --redirect \
+          --non-interactive
+      become: true
