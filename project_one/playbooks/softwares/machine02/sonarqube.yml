@@ -4,7 +4,6 @@
   vars_files:
     - ../../vars/machines.yml
   tasks:
-
     - name: Set vm.max_map_count for sonarqube
       shell: |
         sudo sysctl -w vm.max_map_count=524288
@@ -13,37 +12,33 @@
         echo "fs.file-max=131072" | sudo tee -a /etc/sysctl.conf
       become: true
 
-    - name: Create sonarqube directories
+    - name: Create sonarqube directory
       file:
-        path: "/home/{{ agent_user }}/sonarqube/{{ item }}"
+        path: /home/{{ agent_user }}/sonarqube
         state: directory
-        mode: '0777'
-      loop:
-        - data
-        - logs
-        - extensions
+        mode: '0755'
 
-    - name: Check if sonarqube container already running
-      shell: docker ps -a --filter "name=sonarqube" --format "{% raw %}{{.Names}}{% endraw %}"
-      register: sonarqube_container
+    - name: Copy docker-compose file
+      template:
+        src: ../../templates/docker-compose-sonarqube.yml.j2
+        dest: /home/{{ agent_user }}/sonarqube/docker-compose.yml
 
-    - name: Run sonarqube container
+    - name: Run sonarqube via docker-compose
       shell: |
-        docker run -d \
-          --name sonarqube \
-          --restart=always \
-          -p 9001:9000 \
-          -v /home/{{ agent_user }}/sonarqube/data:/opt/sonarqube/data \
-          -v /home/{{ agent_user }}/sonarqube/logs:/opt/sonarqube/logs \
-          -v /home/{{ agent_user }}/sonarqube/extensions:/opt/sonarqube/extensions \
-          sonarqube:lts-community
-      when: "'sonarqube' not in sonarqube_container.stdout"
+        docker compose -f /home/{{ agent_user }}/sonarqube/docker-compose.yml up -d
 
     - name: Wait for sonarqube to start
       wait_for:
-        port: 9000
+        port: 9001
         delay: 15
         timeout: 180
+
+    - name: Create webroot directory
+      file:
+        path: /var/www/html/.well-known/acme-challenge
+        state: directory
+        mode: '0755'
+      become: true
 
     - name: Install nginx and certbot
       apt:
@@ -81,18 +76,37 @@
         state: absent
       become: true
 
+    - name: Test nginx config
+      shell: nginx -t
+      become: true
+
     - name: Reload nginx
       service:
         name: nginx
         state: reloaded
       become: true
 
-    - name: Run certbot for sonarqube
+    - name: Run certbot with webroot
       shell: |
-        certbot --nginx \
+        certbot certonly \
+          --webroot \
+          -w /var/www/html \
           -d {{ sonarqube_domain }} \
           --agree-tos \
           -m {{ certbot_email }} \
-          --redirect \
           --non-interactive
+      become: true
+
+    - name: Install certificate to nginx
+      shell: |
+        certbot install \
+          --nginx \
+          --cert-name {{ sonarqube_domain }} \
+          --non-interactive
+      become: true
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
       become: true

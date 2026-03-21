@@ -12,7 +12,7 @@
   import_playbook: ./softwares/machine01/jenkins.yml
 
 - name: Install Docker
-  import_playbook: ./softwares/machine01/docker.yml
+  import_playbook: ./softwares/common/docker.yml
 
 - name: Install Nginx and Certbot
   import_playbook: ./softwares/machine01/nginx.yml

@@ -1,22 +1,15 @@
 
 
-#service_account_path: "/home/kk/credentials/service-account.json"
-# adc_file: "credentials file path"
-# google_project_id: "project id"
-# ssh_pubkey_path: "public key path"
-# agent_user: "name"
+service_account_path: "/home/kk/credentials/service-account.json"
+adc_file: "credentials file path"
+google_project_id: "project id"
+ssh_pubkey_path: "public key path"
+agent_user: "name"
 
-
- 
-adc_file: "/home/livdev/.config/gcloud/application_default_credentials.json"
-google_project_id: "project-9f03f82f-aaf2-4765-9f4"
-ssh_pubkey_path: "/home/livdev/.ssh/id_rsa.pub"
-agent_user: "livdev"
-
-sonarqube_domain: "sonarqube.seangliliv.site"
-jenkins_domain: "jenkins.seangliliv.site"
-certbot_email: "seangliliv12@gmail.com"
-nexus_domain: "nexus.seangliliv.site"
+sonarqube_domain: "sonarqube.domain"
+jenkins_domain: "jenkins.domain.com"
+certbot_email: "email@example.com"
+nexus_domain: "nexus.domain.com"
 
 # Define machine spec
 machine_specs:
