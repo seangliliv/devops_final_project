@@ -1,0 +1,12 @@
+---
+- name: Install ohMyZsh on all machines
+  import_playbook: ./softwares/common/ohmyzsh.yml
+
+- name: Install Docker on machine 
+  import_playbook: ./softwares/common/docker.yml
+  
+- name: Install Portainer on all machines
+  import_playbook: ./softwares/common/portainer.yml
+
+- name: Install Nexus on machine03
+  import_playbook: ./softwares/machine03/nexus.yml

@@ -1,0 +1,118 @@
+- name: Install Nexus
+  hosts: machine03
+  become: false
+  vars_files:
+    - ../../vars/machines.yml
+  tasks:
+    - name: Create nexus data directory
+      file:
+        path: /home/{{ agent_user }}/nexus-data
+        state: directory
+        mode: '0777'
+
+    - name: Copy docker-compose file
+      template:
+        src: ../../templates/docker-compose-nexus.yml.j2
+        dest: /home/{{ agent_user }}/docker-compose-nexus.yml
+
+    - name: Run nexus via docker-compose
+      shell: |
+        docker compose -f /home/{{ agent_user }}/docker-compose-nexus.yml up -d
+      register: nexus_compose
+
+    - name: Wait for nexus to start
+      wait_for:
+        port: 8081
+        delay: 30
+        timeout: 300
+
+    - name: Create webroot directory
+      file:
+        path: /var/www/html/.well-known/acme-challenge
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Install nginx and certbot
+      apt:
+        name:
+          - nginx
+          - certbot
+          - python3-certbot-nginx
+        state: present
+        update_cache: true
+      become: true
+
+    - name: Start and enable nginx
+      service:
+        name: nginx
+        state: started
+        enabled: true
+      become: true
+
+    - name: Create nginx config for nexus
+      template:
+        src: ../../templates/nginx-nexus.conf.j2
+        dest: /etc/nginx/sites-available/nexus
+      become: true
+
+    - name: Enable nexus nginx site
+      file:
+        src: /etc/nginx/sites-available/nexus
+        dest: /etc/nginx/sites-enabled/nexus
+        state: link
+      become: true
+
+    - name: Remove default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      become: true
+
+    - name: Test nginx config
+      shell: nginx -t
+      become: true
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: true
+
+    - name: Run certbot with webroot
+      shell: |
+        certbot certonly \
+          --webroot \
+          -w /var/www/html \
+          -d {{ nexus_domain }} \
+          --agree-tos \
+          -m {{ certbot_email }} \
+          --non-interactive
+      become: true
+
+    - name: Install certificate to nginx
+      shell: |
+        certbot install \
+          --nginx \
+          --cert-name {{ nexus_domain }} \
+          --non-interactive
+      become: true
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+      become: true
+
+    - name: Get nexus initial admin password
+      shell: docker exec nexus cat /nexus-data/admin.password
+      register: nexus_password
+      retries: 5
+      delay: 10
+      until: nexus_password.rc == 0
+      ignore_errors: true
+
+    - name: Show nexus initial password
+      debug:
+        msg: "Nexus initial password: {{ nexus_password.stdout }}"
+      when: nexus_password.rc == 0
